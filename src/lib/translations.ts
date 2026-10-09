@@ -4,6 +4,48 @@ export const LANGUAGE_KEY = "mogu-language";
 export const isLocale = (value: unknown): value is Locale =>
   LOCALES.includes(value as Locale);
 export const TRANSLATIONS: Record<string, readonly [string, string, string]> = {
+  写真をアップロード: ["Upload a photo", "上传照片", "사진 업로드"],
+  "JPEG・PNG・WebPの画像（8MB以内）を選択してください。": [
+    "Choose a JPEG, PNG or WebP image up to 8 MB.",
+    "请选择8MB以内的JPEG、PNG或WebP图片。",
+    "8MB 이하의 JPEG·PNG·WebP 이미지를 선택해 주세요.",
+  ],
+  "店舗・料理の写真（メイン）": [
+    "Restaurant / food photo (main)",
+    "餐厅／菜品照片（主图）",
+    "식당·음식 사진 (메인)",
+  ],
+  "店舗・料理の写真（サブ）": [
+    "Restaurant / food photo (secondary)",
+    "餐厅／菜品照片（副图）",
+    "식당·음식 사진 (서브)",
+  ],
+  メニューの写真: ["Menu item photo", "菜品照片", "메뉴 사진"],
+  "JPEG・PNG・WebP / 8MBまで。保存用に画像を縮小します。": [
+    "JPEG, PNG or WebP, up to 8 MB. Photos are resized for storage.",
+    "JPEG、PNG或WebP，最大8MB。照片会缩小后保存。",
+    "JPEG·PNG·WebP, 최대 8MB. 저장을 위해 사진을 축소합니다.",
+  ],
+  "写真を準備しています…": [
+    "Preparing photo…",
+    "正在处理照片…",
+    "사진을 준비하고 있습니다…",
+  ],
+  ダミー写真に戻す: [
+    "Restore demo photo",
+    "恢复示例照片",
+    "데모 사진으로 복원",
+  ],
+  "画像を開けませんでした。別の画像を選択してください。": [
+    "Could not open the image. Choose another image.",
+    "无法打开图片，请选择其他图片。",
+    "이미지를 열 수 없습니다. 다른 이미지를 선택해 주세요.",
+  ],
+  "画像の容量を小さくできませんでした。小さめの画像を選択してください。": [
+    "Could not reduce the image size. Choose a smaller image.",
+    "无法缩小图片容量，请选择较小的图片。",
+    "이미지 용량을 줄일 수 없습니다. 더 작은 이미지를 선택해 주세요.",
+  ],
   確認する食材: [
     "Allergens to check",
     "需确认的过敏食材",

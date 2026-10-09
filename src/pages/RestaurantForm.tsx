@@ -32,6 +32,7 @@ import type { Worker } from "tesseract.js";
 import { reconcileAllergens } from "../lib/matching";
 import { AllergenPanel, Empty, FoodImage, yen } from "../components/ui";
 import { IngredientPicker } from "../components/IngredientPicker";
+import { PhotoUpload } from "../components/PhotoUpload";
 const steps = [
   "基本情報",
   "画像の読み取り",
@@ -80,6 +81,9 @@ export default function RestaurantForm() {
     existing ? structuredClone(existing) : newRestaurant(),
   );
   const [step, setStep] = useState(0);
+  const [uploadingPhotos, setUploadingPhotos] = useState(0);
+  const photoBusy = (busy: boolean) =>
+    setUploadingPhotos((count) => count + (busy ? 1 : -1));
   const [allergenQuery, setAllergenQuery] = useState("");
   const [receipt, setReceipt] = useState("");
   const [filename, setFilename] = useState("");
@@ -350,7 +354,10 @@ export default function RestaurantForm() {
                   value={r.cuisine}
                   onChange={(e) => {
                     set("cuisine", e.target.value);
-                    if (!id)
+                    if (
+                      !id &&
+                      !r.images.some((image) => image.startsWith("data:image/"))
+                    )
                       set("images", [
                         photo(
                           (
@@ -423,6 +430,31 @@ export default function RestaurantForm() {
             <p className="small muted">
               {t("写真はジャンルに応じたイメージ写真を設定します。")}
             </p>
+            <div className="photo-upload-list">
+              {[0, 1].map((index) => (
+                <PhotoUpload
+                  key={index}
+                  label={t(
+                    index === 0
+                      ? "店舗・料理の写真（メイン）"
+                      : "店舗・料理の写真（サブ）",
+                  )}
+                  src={r.images[index] ?? photo("salad")}
+                  fallback={photo("salad")}
+                  onBusy={photoBusy}
+                  onChange={(image) =>
+                    setR((current) => ({
+                      ...current,
+                      images: [0, 1].map((slot) =>
+                        slot === index
+                          ? image
+                          : (current.images[slot] ?? photo("salad")),
+                      ),
+                    }))
+                  }
+                />
+              ))}
+            </div>
           </>
         )}
         {step === 1 && (
@@ -796,6 +828,7 @@ export default function RestaurantForm() {
             <button
               type="button"
               className="button secondary"
+              disabled={uploadingPhotos > 0}
               onClick={() => {
                 setDocumentType("menu");
                 setReceipt("");
@@ -827,6 +860,7 @@ export default function RestaurantForm() {
                     <button
                       type="button"
                       className="icon-button"
+                      disabled={uploadingPhotos > 0}
                       aria-label={t(`メニュー${i + 1}を削除`)}
                       onClick={() =>
                         set(
@@ -839,6 +873,13 @@ export default function RestaurantForm() {
                     </button>
                   )}
                 </div>
+                <PhotoUpload
+                  label={t("メニューの写真")}
+                  src={m.image}
+                  fallback={photo("salad")}
+                  onBusy={photoBusy}
+                  onChange={(image) => menuSet(m.id, { image })}
+                />
                 <div className="form-grid">
                   <label className="field">
                     {t("メニュー名")}
@@ -1014,7 +1055,7 @@ export default function RestaurantForm() {
             <button
               type="button"
               className="button secondary"
-              disabled={reading}
+              disabled={reading || uploadingPhotos > 0}
               onClick={() => {
                 setStep((s) => s - 1);
                 setError("");
@@ -1028,6 +1069,7 @@ export default function RestaurantForm() {
             type="submit"
             disabled={
               reading ||
+              uploadingPhotos > 0 ||
               ((step === 1 || step === 2) && !read) ||
               (step === 5 && !accepted)
             }
