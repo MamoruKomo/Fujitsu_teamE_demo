@@ -1,6 +1,6 @@
 import { useLocale } from "../hooks/useLocale";
 import { allergyImpact } from "../lib/matching";
-import { allergenLabel, STATUS_LABELS } from "../data/constants";
+import { allergenLabel } from "../data/constants";
 import type { Restaurant, UserProfile } from "../types";
 
 export function AllergyImpact({
@@ -15,32 +15,49 @@ export function AllergyImpact({
   return (
     <div className="allergy-impact">
       <div className="allergy-impact-heading">
-        <span>{t("アレルギー条件に該当する参加者")}</span>
-        <b>{impact.percent}%</b>
+        <span>{t("アレルギーに該当するメニューの割合")}</span>
+        <b>{impact.total ? `${impact.percent}%` : "—"}</b>
       </div>
       <div className="allergy-impact-bar" aria-hidden="true">
         <span style={{ width: `${impact.percent}%` }} />
       </div>
       <p>
-        {impact.affected} / {impact.total} {t("人")}
+        {t("該当メニュー / 全メニュー")}: {impact.affected} / {impact.total}{" "}
+        {t("品")}
       </p>
-      {impact.allergens.map(({ id, status, count }) => (
+      {impact.allergens.map(({ id, count }) => (
         <div className="allergy-impact-row" key={id}>
+          <span>{t(allergenLabel(id))}</span>
           <span>
-            {t(allergenLabel(id))} · {t(STATUS_LABELS[status])}
-          </span>
-          <span>
-            {count} / {impact.total} {t("人")} ·{" "}
+            {count} / {impact.total} {t("品")} ·{" "}
             {Math.round((count / impact.total) * 100)}%
           </span>
         </div>
       ))}
-      {!impact.affected && (
+      {impact.unconfirmed > 0 && (
         <p>
-          {t(
-            "店舗全体のアレルギー条件への該当なし。メニューの確認状況などで除外されています。",
-          )}
+          {t("アレルギー情報が未確認のメニュー")}: {impact.unconfirmed}{" "}
+          {t("品")}
         </p>
+      )}
+      {!impact.total ? (
+        <p>{t("メニューが未登録のため割合を計算できません。")}</p>
+      ) : (
+        <details className="allergy-menu-breakdown">
+          <summary>{t("メニュー別の内訳")}</summary>
+          {impact.menus.map(({ menu, confirmed, allergens }) => (
+            <div className="allergy-impact-row" key={menu.id}>
+              <span>{t(menu.name)}</span>
+              <span>
+                {!confirmed
+                  ? t("未確認")
+                  : allergens.length
+                    ? t(allergens.map(allergenLabel).join("・"))
+                    : t("登録情報での該当なし")}
+              </span>
+            </div>
+          ))}
+        </details>
       )}
     </div>
   );

@@ -28,38 +28,61 @@ const menu: MenuItem = {
   allergens: [],
   allergenReviewStatus: "confirmed",
 };
-describe("excluded restaurant allergy percentages", () => {
-  it("counts each member once and shows per-allergen counts, including missing declarations", () => {
+describe("excluded restaurant menu allergy percentages", () => {
+  it("uses all menus as denominator and counts overlapping allergens only once per menu", () => {
     const r = {
       ...data.restaurants[0],
-      allergenStatuses: { egg: "used" as const, milk: "not_used" as const },
+      menus: [
+        { ...menu, id: "a", allergens: ["egg", "milk"] },
+        { ...menu, id: "b", allergens: ["milk"] },
+        { ...menu, id: "c", allergens: [] },
+        {
+          ...menu,
+          id: "d",
+          allergens: ["egg"],
+          allergenReviewStatus: "unconfirmed" as const,
+        },
+      ],
     };
     const result = allergyImpact(r, [
-      { ...member, id: "a", allergies: ["egg", "shrimp", "egg"] },
-      { ...member, id: "b", allergies: ["shrimp"] },
-      { ...member, id: "c", allergies: ["milk"] },
-      { ...member, id: "d", allergies: [] },
+      { ...member, id: "a", allergies: ["egg", "milk", "egg"] },
+      { ...member, id: "b", allergies: ["milk"] },
     ]);
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       affected: 2,
       total: 4,
       percent: 50,
+      unconfirmed: 1,
       allergens: [
-        { id: "egg", status: "used", count: 1 },
-        { id: "shrimp", status: "unknown", count: 2 },
+        { id: "egg", count: 1 },
+        { id: "milk", count: 2 },
       ],
     });
+    expect(result.menus[3]).toMatchObject({ confirmed: false, allergens: [] });
+    expect(result.menus[0].allergens).toEqual(["egg", "milk"]);
   });
-  it("handles personal search and zero members without division by zero", () => {
+  it("handles personal search, no allergies and no registered menus", () => {
     const r = {
       ...data.restaurants[0],
-      allergenStatuses: { egg: "unknown" as const },
+      menus: [{ ...menu, allergens: ["egg"] }],
     };
     expect(allergyImpact(r, [{ ...member, allergies: ["egg"] }]).percent).toBe(
       100,
     );
-    expect(allergyImpact(r, []).percent).toBe(0);
     expect(allergyImpact(r, [{ ...member, allergies: [] }]).affected).toBe(0);
+    expect(allergyImpact({ ...r, menus: [] }, []).percent).toBe(0);
+  });
+  it("keeps store-wide exclusion when menu overlap is zero", () => {
+    const r = {
+      ...data.restaurants[0],
+      menus: [menu],
+      allergenStatuses: { egg: "used" as const },
+    };
+    const members = [{ ...member, allergies: ["egg"] }];
+    expect(allergyImpact(r, members).percent).toBe(0);
+    expect(matchRestaurants([r], members, "", Infinity).excluded).toHaveLength(
+      1,
+    );
   });
 });
 describe("hard allergy constraints", () => {

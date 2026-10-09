@@ -4,6 +4,38 @@ export const LANGUAGE_KEY = "mogu-language";
 export const isLocale = (value: unknown): value is Locale =>
   LOCALES.includes(value as Locale);
 export const TRANSLATIONS: Record<string, readonly [string, string, string]> = {
+  アレルギーに該当するメニューの割合: [
+    "Menus matching registered allergies",
+    "符合已登记过敏条件的菜单比例",
+    "등록된 알레르기에 해당하는 메뉴 비율",
+  ],
+  "該当メニュー / 全メニュー": [
+    "Matching / all menu items",
+    "符合条件的菜品／全部菜品",
+    "해당 메뉴 / 전체 메뉴",
+  ],
+  アレルギー情報が未確認のメニュー: [
+    "Menu items with unconfirmed allergen information",
+    "过敏原信息未确认的菜品",
+    "알레르기 정보가 미확인인 메뉴",
+  ],
+  "メニューが未登録のため割合を計算できません。": [
+    "Cannot calculate the percentage: no menus registered.",
+    "尚未登记菜单，无法计算比例。",
+    "등록된 메뉴가 없어 비율을 계산할 수 없습니다.",
+  ],
+  メニュー別の内訳: ["Breakdown by menu item", "各菜品明细", "메뉴별 내역"],
+  登録情報での該当なし: [
+    "No match in registered information",
+    "登记信息中无匹配项",
+    "등록 정보에서 해당 없음",
+  ],
+  "割合は全メニューのうち、参加者の登録アレルギーに該当する確認済みメニューの品数です。複数のアレルギーに該当しても1品として数えます。未確認のメニューは分母に含み、該当数には含めません。店舗全体の使用状況による除外は維持します。":
+    [
+      "The percentage is confirmed menu items matching members' registered allergies divided by all menu items. Each item is counted once even if multiple allergens match. Unconfirmed items are included in the total but not in the matching count. Restaurant-wide exclusions still apply.",
+      "比例为符合成员已登记过敏条件的已确认菜品数除以全部菜品数。每道菜只计一次，即使匹配多个过敏原。未确认菜品计入总数，不计入匹配数。餐厅整体使用情况的排除条件仍然适用。",
+      "전체 메뉴 중 참여자의 등록 알레르기에 해당하는 확인 완료 메뉴의 비율입니다. 여러 알레르기에 해당해도 한 품목으로 계산합니다. 미확인 메뉴는 전체 수에 포함하지만 해당 수에는 포함하지 않습니다. 식당 전체 사용 현황에 따른 제외는 유지합니다.",
+    ],
   アレルギー条件に該当する参加者: [
     "Members affected by allergy criteria",
     "符合过敏排除条件的成员",
