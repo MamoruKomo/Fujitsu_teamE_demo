@@ -122,10 +122,7 @@ export default function SearchPage({ home = false }: { home?: boolean }) {
         </Link>
       </section>
       <div className="mode-tabs" aria-label="検索モード">
-        <Link className="quick-group-link" to="/groups/new">
-          <Plus size={17} />
-          新しいグループを作る
-        </Link>
+
         <button
           className={!personal ? "active" : ""}
           onClick={() => setMode("group")}
@@ -140,6 +137,10 @@ export default function SearchPage({ home = false }: { home?: boolean }) {
           <UserRound size={18} />
           ひとりで探す
         </button>
+        <Link className="quick-group-link" to="/groups/new">
+          <Plus size={17} />
+          新しいグループを作る
+        </Link>
       </div>
       <form
         className="search-bar"
