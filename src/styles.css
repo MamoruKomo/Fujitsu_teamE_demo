@@ -3004,3 +3004,70 @@ p {
     gap: 20px;
   }
 }
+
+.language-switcher {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #e4e5dd;
+  border-radius: 12px;
+  padding: 8px 10px;
+  color: #636b60;
+}
+.language-switcher select {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  max-width: 100px;
+  cursor: pointer;
+  outline: none;
+}
+.language-switcher:focus-within {
+  outline: 2px solid var(--coral);
+  outline-offset: 2px;
+}
+html[lang="en"] .site-header nav {
+  gap: 20px;
+}
+html[lang="en"] .site-header nav a {
+  font-size: 12px;
+}
+html[lang="en"] .brand small {
+  font-size: 10px;
+}
+html[lang="en"] .search-bar {
+  border-radius: 28px;
+}
+html[lang="en"] .group-card-actions .button {
+  font-size: 11px;
+}
+html[lang="en"] .mini-steps {
+  gap: 12px;
+}
+@media (max-width: 700px) {
+  .language-switcher {
+    padding: 6px;
+    gap: 0;
+  }
+  .language-switcher svg {
+    display: none;
+  }
+  .language-switcher select {
+    width: 78px;
+    font-size: 11px;
+  }
+  .header-actions .demo-pill {
+    display: none;
+  }
+  .header-actions {
+    gap: 6px;
+  }
+  .registration-steps li {
+    font-size: 10px;
+  }
+  .language-switcher + .reset-button {
+    display: none;
+  }
+}

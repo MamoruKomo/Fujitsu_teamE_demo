@@ -1,3 +1,4 @@
+import { useLocale } from "../hooks/useLocale";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
@@ -67,6 +68,7 @@ const newRestaurant = (): Restaurant => ({
   reviews: [],
 });
 export default function RestaurantForm() {
+  const { t } = useLocale();
   const { id } = useParams();
   const { data, update } = useStore();
   const existing = data.restaurants.find((r) => r.id === id);
@@ -105,7 +107,8 @@ export default function RestaurantForm() {
     },
     [receipt],
   );
-  if (id && !existing) return <Empty title="編集するお店が見つかりません" />;
+  if (id && !existing)
+    return <Empty title={t("編集するお店が見つかりません")} />;
   const set = <K extends keyof Restaurant>(key: K, value: Restaurant[K]) =>
     setR((p) => ({ ...p, [key]: value }));
   const menuSet = (menuId: string, change: Partial<MenuItem>) =>
@@ -268,12 +271,12 @@ export default function RestaurantForm() {
   return (
     <div className="registration-page">
       <Link className="back-link" to={id ? `/restaurants/${id}` : "/"}>
-        戻る
+        {t("戻る")}
       </Link>
       <div className="page-title">
-        <div className="eyebrow">FOR RESTAURANTS</div>
-        <h1>{id ? "店舗情報を編集" : "お店の魅力と、食材の情報を。"}</h1>
-        <p>デモ用の店舗情報を登録します。ログインは不要です。</p>
+        <div className="eyebrow">{t("FOR RESTAURANTS")}</div>
+        <h1>{t(id ? "店舗情報を編集" : "お店の魅力と、食材の情報を。")}</h1>
+        <p>{t("デモ用の店舗情報を登録します。ログインは不要です。")}</p>
       </div>
       <ol className="registration-steps">
         {steps.map((s, i) => (
@@ -282,7 +285,7 @@ export default function RestaurantForm() {
             className={step === i ? "active" : step > i ? "done" : ""}
           >
             <span>{step > i ? <Check size={16} /> : i + 1}</span>
-            {s}
+            {t(s)}
           </li>
         ))}
       </ol>
@@ -295,19 +298,25 @@ export default function RestaurantForm() {
         }}
       >
         <div className="step-heading">
-          <span>STEP {step + 1} / 6</span>
-          <h2>{steps[step]}</h2>
+          <span>
+            {t("STEP")}
+            {step + 1}
+            {t("/ 6")}
+          </span>
+          <h2>{t(steps[step])}</h2>
         </div>
         {step === 0 && (
           <>
             {!id && (
               <div className="green-notice dummy-note">
-                店舗名・住所・予算・メニューはダミー情報を自動入力しています。そのまま進めるほか、自由に変更できます。
+                {t(
+                  "店舗名・住所・予算・メニューはダミー情報を自動入力しています。そのまま進めるほか、自由に変更できます。",
+                )}
               </div>
             )}
             <div className="form-grid">
               <label className="field">
-                店舗名
+                {t("店舗名")}
                 <input
                   autoFocus
                   required
@@ -315,22 +324,24 @@ export default function RestaurantForm() {
                   pattern={".*\\S.*"}
                   value={r.name}
                   onChange={(e) => set("name", e.target.value)}
-                  placeholder="例：季節の食卓 こもれび"
+                  placeholder={t("例：季節の食卓 こもれび")}
                 />
               </label>
               <label className="field">
-                エリア
+                {t("エリア")}
                 <select
                   value={r.area}
                   onChange={(e) => set("area", e.target.value)}
                 >
                   {AREAS.map((a) => (
-                    <option key={a}>{a}</option>
+                    <option key={a} value={a}>
+                      {t(a)}
+                    </option>
                   ))}
                 </select>
               </label>
               <label className="field">
-                料理ジャンル
+                {t("料理ジャンル")}
                 <select
                   value={r.cuisine}
                   onChange={(e) => {
@@ -357,12 +368,14 @@ export default function RestaurantForm() {
                   }}
                 >
                   {CUISINES.map((c) => (
-                    <option key={c}>{c}</option>
+                    <option key={c} value={c}>
+                      {t(c)}
+                    </option>
                   ))}
                 </select>
               </label>
               <label className="field">
-                1人あたりの予算（円）
+                {t("1人あたりの予算（円）")}
                 <input
                   required
                   type="number"
@@ -373,17 +386,17 @@ export default function RestaurantForm() {
                 />
               </label>
               <label className="field span-2">
-                住所（架空）
+                {t("住所（架空）")}
                 <input
                   required
                   maxLength={100}
                   value={r.address}
                   onChange={(e) => set("address", e.target.value)}
-                  placeholder="例：東京都渋谷区こもれび町1-2-3"
+                  placeholder={t("例：東京都渋谷区こもれび町1-2-3")}
                 />
               </label>
               <label className="field span-2">
-                営業時間
+                {t("営業時間")}
                 <input
                   required
                   maxLength={80}
@@ -392,25 +405,25 @@ export default function RestaurantForm() {
                 />
               </label>
               <label className="field span-2">
-                店舗紹介
+                {t("店舗紹介")}
                 <textarea
                   required
                   maxLength={500}
                   rows={4}
                   value={r.description}
                   onChange={(e) => set("description", e.target.value)}
-                  placeholder="料理やお店の雰囲気を教えてください"
+                  placeholder={t("料理やお店の雰囲気を教えてください")}
                 />
               </label>
             </div>
             <p className="small muted">
-              写真はジャンルに応じたイメージ写真を設定します。
+              {t("写真はジャンルに応じたイメージ写真を設定します。")}
             </p>
           </>
         )}
         {step === 1 && (
           <>
-            <div className="ocr-type" aria-label="読み取る書類">
+            <div className="ocr-type" aria-label={t("読み取る書類")}>
               {(["receipt", "menu"] as const).map((type) => (
                 <button
                   type="button"
@@ -427,28 +440,32 @@ export default function RestaurantForm() {
                     setError("");
                   }}
                 >
-                  {type === "receipt" ? "レシート" : "メニュー表"}
+                  {t(type === "receipt" ? "レシート" : "メニュー表")}
                 </button>
               ))}
             </div>
             <div className="ocr-badge">
               <ScanLine size={19} />
-              日本語・英語の画像を読み取り
+              {t("日本語・英語の画像を読み取り")}
             </div>
             <p>
-              画像の文字をブラウザ内で認識します。初回は読み取り用データの取得に時間がかかります。結果は必ず確認・修正してください。
+              {t(
+                "画像の文字をブラウザ内で認識します。初回は読み取り用データの取得に時間がかかります。結果は必ず確認・修正してください。",
+              )}
             </p>
             <label className="upload-box">
               <Upload size={30} />
               <strong>
-                {filename ||
-                  `${documentType === "receipt" ? "レシート" : "メニュー表"}の画像を選択`}
+                {t(
+                  filename ||
+                    `${documentType === "receipt" ? "レシート" : "メニュー表"}の画像を選択`,
+                )}
               </strong>
-              <span>JPEG・PNG・WebP / 8MBまで</span>
+              <span>{t("JPEG・PNG・WebP / 8MBまで")}</span>
               <input
                 disabled={reading}
                 className="sr-only"
-                aria-label="OCR画像を選択"
+                aria-label={t("OCR画像を選択")}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 onChange={(e) => upload(e.target.files?.[0])}
@@ -477,27 +494,33 @@ export default function RestaurantForm() {
                   setError("");
                 }}
               >
-                サンプル{documentType === "receipt" ? "レシート" : "メニュー表"}
-                を使う
+                {t("サンプル")}
+                {t(documentType === "receipt" ? "レシート" : "メニュー表")}
+                {t("を使う")}
               </button>
-              {receipt && (
-                <button
-                  type="button"
-                  className="button primary"
-                  disabled={reading}
-                  onClick={runOcr}
-                >
-                  {reading ? (
-                    <LoaderCircle className="spin" size={17} />
-                  ) : (
-                    <ScanLine size={17} />
-                  )}{" "}
-                  {reading
-                    ? `読み取り中… ${progress}%`
-                    : sample
-                      ? "サンプル結果を表示"
-                      : "画像を読み取る"}
-                </button>
+              {t(
+                receipt && (
+                  <button
+                    type="button"
+                    className="button primary"
+                    disabled={reading}
+                    onClick={runOcr}
+                  >
+                    {reading ? (
+                      <LoaderCircle className="spin" size={17} />
+                    ) : (
+                      <ScanLine size={17} />
+                    )}
+                    {t(" ")}
+                    {t(
+                      reading
+                        ? `読み取り中… ${progress}%`
+                        : sample
+                          ? "サンプル結果を表示"
+                          : "画像を読み取る",
+                    )}
+                  </button>
+                ),
               )}
             </div>
             {reading && (
@@ -506,7 +529,7 @@ export default function RestaurantForm() {
                   className="ocr-progress"
                   value={progress}
                   max={100}
-                  aria-label="OCR進捗"
+                  aria-label={t("OCR進捗")}
                 />
                 <button
                   type="button"
@@ -521,26 +544,30 @@ export default function RestaurantForm() {
                     );
                   }}
                 >
-                  読み取りを中止
+                  {t("読み取りを中止")}
                 </button>
               </>
             )}
-            {receipt && (
-              <div className={`receipt-preview ${reading ? "scanning" : ""}`}>
-                <img src={receipt} alt="選択した書類" />
-                {reading && <span className="scan-line" />}
-              </div>
+            {t(
+              receipt && (
+                <div className={`receipt-preview ${reading ? "scanning" : ""}`}>
+                  <img src={receipt} alt={t("選択した書類")} />
+                  {reading && <span className="scan-line" />}
+                </div>
+              ),
             )}
             {sample && (
               <p className="small muted">
-                サンプルは決まった読み取り結果を使います。アップロード画像は実際に文字認識します。
+                {t(
+                  "サンプルは決まった読み取り結果を使います。アップロード画像は実際に文字認識します。",
+                )}
               </p>
             )}
             {read && (
               <div className="green-notice" role="status">
                 <Check size={18} />
                 {products.length}
-                件の候補を抽出しました。次へ進んで確認してください。
+                {t("件の候補を抽出しました。次へ進んで確認してください。")}
               </div>
             )}
             <button
@@ -554,14 +581,14 @@ export default function RestaurantForm() {
                 setError("");
               }}
             >
-              画像を使わず、手動確認へ進む
+              {t("画像を使わず、手動確認へ進む")}
             </button>
           </>
         )}
         {step === 2 && (
           <>
             <label className="field">
-              読み取った文字（修正できます）
+              {t("読み取った文字（修正できます）")}
               <textarea
                 className="ocr-text"
                 value={ocrText}
@@ -585,15 +612,19 @@ export default function RestaurantForm() {
                 }
               }}
             >
-              修正した文字から候補を更新
+              {t("修正した文字から候補を更新")}
             </button>
             {!read && (
               <p className="small muted">
-                文字を変更した後は「候補を更新」を押してください。メニュー表の更新はメニュー候補を置き換えます。
+                {t(
+                  "文字を変更した後は「候補を更新」を押してください。メニュー表の更新はメニュー候補を置き換えます。",
+                )}
               </p>
             )}
             <p>
-              文字と食材名からの照合候補です。ラベルを確認した想定で、商品ごとに候補を修正し「確認した」を選んでください。未確認の商品は確定情報に反映しません。
+              {t(
+                "文字と食材名からの照合候補です。ラベルを確認した想定で、商品ごとに候補を修正し「確認した」を選んでください。未確認の商品は確定情報に反映しません。",
+              )}
             </p>
             <div className="product-list">
               {products.map((p, i) => (
@@ -603,7 +634,7 @@ export default function RestaurantForm() {
                 >
                   <div>
                     <label className="field">
-                      読み取った商品・料理名
+                      {t("読み取った商品・料理名")}
                       <input
                         value={p.name}
                         maxLength={180}
@@ -623,7 +654,7 @@ export default function RestaurantForm() {
                       />
                     </label>
                     <label className="field">
-                      食材名
+                      {t("食材名")}
                       <input
                         value={p.ingredient}
                         maxLength={40}
@@ -649,10 +680,11 @@ export default function RestaurantForm() {
                         setProducts((ps) => ps.filter((_, j) => i !== j))
                       }
                     >
-                      この候補を削除
+                      {t("この候補を削除")}
                     </button>
                     <span className="small muted">
-                      メニューに紐付ける食材：{p.ingredient}
+                      {t("メニューに紐付ける食材：")}
+                      {t(p.ingredient)}
                     </span>
                     <Tags
                       options={ALLERGENS}
@@ -667,7 +699,7 @@ export default function RestaurantForm() {
                         )
                       }
                     />
-                    {p.note && <p className="small muted">{p.note}</p>}
+                    {t(p.note && <p className="small muted">{t(p.note)}</p>)}
                   </div>
                   <label className="checkbox-label">
                     <input
@@ -681,27 +713,31 @@ export default function RestaurantForm() {
                         )
                       }
                     />
-                    確認した
+                    {t("確認した")}
                   </label>
                 </div>
               ))}
             </div>
             <div className="notice compact">
-              画像に載っていない食材を「不使用」とは判定しません。調味料・加工食品の原材料も別途確認が必要です。
+              {t(
+                "画像に載っていない食材を「不使用」とは判定しません。調味料・加工食品の原材料も別途確認が必要です。",
+              )}
             </div>
           </>
         )}
         {step === 3 && (
           <>
             <p>
-              店舗全体の使用状況を確認してください。サンプル商品の確認済み候補は「使用あり」に反映されます。不使用は、店舗全体で確認した場合だけ選んでください。
+              {t(
+                "店舗全体の使用状況を確認してください。サンプル商品の確認済み候補は「使用あり」に反映されます。不使用は、店舗全体で確認した場合だけ選んでください。",
+              )}
             </p>
             <div className="allergen-editor">
               {ALLERGENS.map(([a, label]) => (
                 <label key={a}>
-                  <strong>{label}</strong>
+                  <strong>{t(label)}</strong>
                   <select
-                    aria-label={`${label}の店舗全体の使用状況`}
+                    aria-label={t(`${label}の店舗全体の使用状況`)}
                     value={r.allergenStatuses[a] ?? "unknown"}
                     onChange={(e) =>
                       set("allergenStatuses", {
@@ -712,7 +748,7 @@ export default function RestaurantForm() {
                   >
                     {Object.entries(STATUS_LABELS).map(([value, text]) => (
                       <option value={value} key={value}>
-                        {text}
+                        {t(text)}
                       </option>
                     ))}
                   </select>
@@ -720,7 +756,7 @@ export default function RestaurantForm() {
               ))}
             </div>
             <label className="field">
-              調理環境・交差接触について
+              {t("調理環境・交差接触について")}
               <textarea
                 required
                 rows={3}
@@ -749,20 +785,25 @@ export default function RestaurantForm() {
               }}
             >
               <ScanLine size={17} />
-              メニュー表の画像から入力する
+              {t("メニュー表の画像から入力する")}
             </button>
             <p>
-              食材はメニューごとに選択してください。確認済み商品の食材も、全メニューへ自動で割り当てることはありません。
+              {t(
+                "食材はメニューごとに選択してください。確認済み商品の食材も、全メニューへ自動で割り当てることはありません。",
+              )}
             </p>
             {r.menus.map((m, i) => (
               <section className="menu-editor" key={m.id}>
                 <div className="section-heading">
-                  <h3>メニュー {i + 1}</h3>
+                  <h3>
+                    {t("メニュー")}
+                    {i + 1}
+                  </h3>
                   {r.menus.length > 1 && (
                     <button
                       type="button"
                       className="icon-button"
-                      aria-label={`メニュー${i + 1}を削除`}
+                      aria-label={t(`メニュー${i + 1}を削除`)}
                       onClick={() =>
                         set(
                           "menus",
@@ -776,7 +817,7 @@ export default function RestaurantForm() {
                 </div>
                 <div className="form-grid">
                   <label className="field">
-                    メニュー名
+                    {t("メニュー名")}
                     <input
                       required
                       maxLength={60}
@@ -786,7 +827,7 @@ export default function RestaurantForm() {
                     />
                   </label>
                   <label className="field">
-                    価格（円）
+                    {t("価格（円）")}
                     <input
                       required
                       type="number"
@@ -799,7 +840,7 @@ export default function RestaurantForm() {
                     />
                   </label>
                   <label className="field span-2">
-                    説明文
+                    {t("説明文")}
                     <input
                       maxLength={180}
                       value={m.description}
@@ -809,7 +850,7 @@ export default function RestaurantForm() {
                     />
                   </label>
                 </div>
-                <h4>使用食材</h4>
+                <h4>{t("使用食材")}</h4>
                 <label className="checkbox-label">
                   <input
                     type="checkbox"
@@ -821,7 +862,7 @@ export default function RestaurantForm() {
                       })
                     }
                   />
-                  食材情報は未確認
+                  {t("食材情報は未確認")}
                 </label>
                 {m.ingredients !== null && (
                   <Tags
@@ -842,7 +883,7 @@ export default function RestaurantForm() {
                     }
                   />
                 )}
-                <h4>メニューに含まれるアレルゲン</h4>
+                <h4>{t("メニューに含まれるアレルゲン")}</h4>
                 <Tags
                   options={ALLERGENS}
                   selected={m.allergens}
@@ -865,7 +906,7 @@ export default function RestaurantForm() {
                       })
                     }
                   />
-                  このメニューの原材料・アレルゲン情報を確認した
+                  {t("このメニューの原材料・アレルゲン情報を確認した")}
                 </label>
               </section>
             ))}
@@ -876,42 +917,51 @@ export default function RestaurantForm() {
               onClick={() => set("menus", [...r.menus, newMenu()])}
             >
               <Plus size={17} />
-              メニューを追加
+              {t("メニューを追加")}
             </button>
             <p className="small muted">
-              確認済みメニューに含まれるアレルゲンは、店舗全体でも「使用あり」に更新します。未確認メニューはおすすめに選ばれません。
+              {t(
+                "確認済みメニューに含まれるアレルゲンは、店舗全体でも「使用あり」に更新します。未確認メニューはおすすめに選ばれません。",
+              )}
             </p>
           </>
         )}
         {step === 5 && (
           <>
             <div className="registration-preview">
-              <FoodImage src={r.images[0]} alt="店舗のイメージ" />
+              <FoodImage src={r.images[0]} alt={t("店舗のイメージ")} />
               <div>
                 <h3>{r.name}</h3>
                 <p>
-                  {r.area} · {r.cuisine} · {yen(r.price)} / 人
+                  {t(r.area)}
+                  {t("·")}
+                  {t(r.cuisine)}
+                  {t("·")}
+                  {t(yen(r.price))}
+                  {t("/ 人")}
                 </p>
                 <p>
-                  {r.menus.length}品のメニュー · 確認済み{" "}
+                  {r.menus.length}
+                  {t("品のメニュー · 確認済み")}
+                  {t(" ")}
                   {
                     r.menus.filter(
                       (m) => m.allergenReviewStatus === "confirmed",
                     ).length
                   }
-                  品
+                  {t("品")}
                 </p>
               </div>
             </div>
-            <h3>店舗全体のアレルゲン情報</h3>
+            <h3>{t("店舗全体のアレルゲン情報")}</h3>
             <AllergenPanel restaurant={final} />
             {discrepancies.length > 0 && (
               <div className="notice compact">
                 <ShieldCheck size={18} />
                 <p>
-                  商品・メニューとの矛盾を防ぐため、
-                  {discrepancies.map(([a]) => allergenLabel(a)).join("・")}
-                  の使用状況を更新します。
+                  {t("商品・メニューとの矛盾を防ぐため、")}
+                  {t(discrepancies.map(([a]) => allergenLabel(a)).join("・"))}
+                  {t("の使用状況を更新します。")}
                 </p>
               </div>
             )}
@@ -922,14 +972,16 @@ export default function RestaurantForm() {
                 checked={accepted}
                 onChange={(e) => setAccepted(e.target.checked)}
               />
-              デモ情報として確認しました。登録内容を検索に反映します。
+              {t("デモ情報として確認しました。登録内容を検索に反映します。")}
             </label>
           </>
         )}
-        {error && (
-          <p role="alert" className="error-text">
-            {error}
-          </p>
+        {t(
+          error && (
+            <p role="alert" className="error-text">
+              {t(error)}
+            </p>
+          ),
         )}
         <div className="form-actions">
           {step > 0 && (
@@ -942,7 +994,7 @@ export default function RestaurantForm() {
                 setError("");
               }}
             >
-              戻る
+              {t("戻る")}
             </button>
           )}
           <button
@@ -954,13 +1006,15 @@ export default function RestaurantForm() {
               (step === 5 && !accepted)
             }
           >
-            {step === 5 ? (
-              <>
-                <Check size={17} />
-                {id ? "変更を保存" : "店舗を登録する"}
-              </>
-            ) : (
-              "次へ進む"
+            {t(
+              step === 5 ? (
+                <>
+                  <Check size={17} />
+                  {t(id ? "変更を保存" : "店舗を登録する")}
+                </>
+              ) : (
+                "次へ進む"
+              ),
             )}
           </button>
         </div>
