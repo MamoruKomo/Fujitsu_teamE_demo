@@ -20,11 +20,10 @@ import {
   Check,
   Plus,
 } from "lucide-react";
-import { GroupCards } from "../components/GroupCards";
 import { useStore } from "../hooks/useStore";
 import { AREAS, BUDGETS, CUISINES, allergenLabel } from "../data/constants";
 import { matchRestaurants } from "../lib/matching";
-import { Avatar, RestaurantCard, Notice, Empty, yen } from "../components/ui";
+import { RestaurantCard, Notice, Empty, yen } from "../components/ui";
 const cuisineIcons = [
   Fish,
   Utensils,
@@ -108,56 +107,7 @@ export default function SearchPage({ home = false }: { home?: boolean }) {
             )}
           </p>
         </div>
-        <Link className="intro-group" to="/groups">
-          <div className="avatar-stack">
-            {(group?.members ?? data.groups[0]?.members ?? [])
-              .slice(0, 4)
-              .map((m, i) => (
-                <Avatar name={m.nickname} index={i} key={m.id} />
-              ))}
-          </div>
-          <div>
-            <span className="small muted">{t("マイグループ")}</span>
-            <strong>
-              {data.groups.length}
-              {t("つのグループ")}
-            </strong>
-            <span className="small">{t("グループ一覧を見る")}</span>
-          </div>
-          <ChevronDown size={16} />
-        </Link>
       </section>
-      {home && (
-        <section className="home-groups" aria-label={t("マイグループ一覧")}>
-          <div className="section-heading">
-            <div>
-              <h2>
-                {t("マイグループ")}
-                {t(" ")}
-                <span className="count-badge">{data.groups.length}</span>
-              </h2>
-              <p className="small muted">
-                {t("ごはん会を選んで、お店探しをはじめよう。")}
-              </p>
-            </div>
-            <Link className="text-link" to="/groups">
-              {t("一覧を見る →")}
-            </Link>
-          </div>
-          {data.groups.length ? (
-            <GroupCards
-              groups={[...data.groups].reverse()}
-              restaurants={data.restaurants}
-            />
-          ) : (
-            <p className="muted">{t("まだグループがありません。")}</p>
-          )}
-          <Link className="home-new-group" to="/groups/new">
-            <Plus size={18} />
-            {t("新しいグループを作る")}
-          </Link>
-        </section>
-      )}
       <div className="mode-tabs" aria-label={t("検索モード")}>
         <button
           className={!personal ? "active" : ""}
