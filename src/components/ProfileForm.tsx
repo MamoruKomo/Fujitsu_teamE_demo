@@ -3,6 +3,7 @@ import { ShieldCheck, Leaf, Check } from "lucide-react";
 import type { UserProfile } from "../types";
 import { ALLERGENS, INGREDIENTS, CUISINES } from "../data/constants";
 import { Tags } from "./ui";
+import { IngredientPicker } from "./IngredientPicker";
 export const blankProfile = (): UserProfile => ({
   id: crypto.randomUUID(),
   nickname: "",
@@ -83,7 +84,8 @@ export function ProfileForm({
             <p>
               該当するものをすべて選んでください。好き嫌いとは別に、お店を絞り込む必須条件として使います。
             </p>
-            <Tags
+            <IngredientPicker
+              label="アレルギー食材"
               options={ALLERGENS}
               selected={profile.allergies}
               onChange={(v) => set("allergies", v)}
@@ -100,7 +102,8 @@ export function ProfileForm({
         <>
           <section className="form-section">
             <h3>好きな食材</h3>
-            <Tags
+            <IngredientPicker
+              label="好きな食材"
               options={INGREDIENTS}
               selected={profile.likedIngredients}
               onChange={(v) => set("likedIngredients", v)}
@@ -109,7 +112,8 @@ export function ProfileForm({
           </section>
           <section className="form-section">
             <h3>苦手な食材</h3>
-            <Tags
+            <IngredientPicker
+              label="苦手な食材"
               options={INGREDIENTS}
               selected={profile.dislikedIngredients}
               onChange={(v) => set("dislikedIngredients", v)}

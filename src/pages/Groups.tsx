@@ -14,13 +14,52 @@ import { useStore } from "../hooks/useStore";
 import type { UserProfile } from "../types";
 import { ProfileForm } from "../components/ProfileForm";
 import { Avatar, Empty, Modal, ProfileSummary } from "../components/ui";
+export function GroupList() {
+  const { data } = useStore();
+  return (
+    <div className="narrow-page">
+      <div className="page-title inline-title">
+        <div>
+          <div className="eyebrow">YOUR GROUPS</div>
+          <h1>マイグループ</h1>
+          <p>ごはんの予定に合わせて、気軽に作れます。</p>
+        </div>
+        <Link className="button primary" to="/groups/new">
+          <Plus size={18} />
+          新しいグループ
+        </Link>
+      </div>
+      <div className="group-list">
+        {data.groups.map((g) => (
+          <Link
+            key={g.id}
+            className="form-card group-list-item"
+            to={`/groups/${g.id}`}
+          >
+            <Users size={24} />
+            <div>
+              <h3>{g.name}</h3>
+              <p>{g.members.length}人が参加中</p>
+            </div>
+            <span>開く →</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 export function CreateGroup() {
   const { data, update } = useStore();
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [started, setStarted] = useState(false);
-  const save = (profile: UserProfile) => {
+  const [name, setName] = useState("新しいごはん会");
+  const [nickname, setNickname] = useState(data.profile.nickname || "幹事さん");
+  const save = () => {
     const id = crypto.randomUUID();
+    const profile = {
+      ...structuredClone(data.profile),
+      id: crypto.randomUUID(),
+      nickname: nickname.trim(),
+    };
     if (
       update((d) => ({
         ...d,
@@ -34,55 +73,53 @@ export function CreateGroup() {
   };
   return (
     <div className="narrow-page">
-      <Link className="back-link" to="/">
-        ホームへ戻る
+      <Link className="back-link" to="/groups">
+        マイグループへ戻る
       </Link>
       <div className="page-title">
         <div className="eyebrow">NEW GROUP</div>
-        <h1>
-          みんなの食卓を、
-          <br />
-          ここから。
-        </h1>
-        <p>グループを作って、それぞれの食の好みを集めましょう。</p>
+        <h1>ごはん会を作ろう。</h1>
+        <p>名前を決めて、ワンクリックでスタート。</p>
       </div>
-      <div className="form-card">
-        {!started ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setStarted(true);
-            }}
-          >
-            <label className="field">
-              グループ名
-              <input
-                autoFocus
-                required
-                maxLength={48}
-                pattern={".*\\S.*"}
-                placeholder="例：金曜日のごはん会"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </label>
-            <p className="muted small">
-              招待URLは同じブラウザの別タブで利用できます。別端末や別ブラウザには共有されません。
-            </p>
-            <button className="button primary">幹事のプロフィールを登録</button>
-          </form>
-        ) : (
-          <>
-            <h2>{name}</h2>
-            <p className="muted">まずは幹事の食の好みを教えてください。</p>
-            <ProfileForm
-              initial={{ ...data.profile, id: crypto.randomUUID() }}
-              onSave={save}
-              submitLabel="グループを作成"
-            />
-          </>
-        )}
-      </div>
+      <form
+        className="form-card"
+        onSubmit={(e) => {
+          e.preventDefault();
+          save();
+        }}
+      >
+        <label className="field">
+          グループ名
+          <input
+            autoFocus
+            required
+            maxLength={48}
+            pattern={".*\\S.*"}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </label>
+        <label className="field">
+          幹事のニックネーム
+          <input
+            required
+            maxLength={24}
+            pattern={".*\\S.*"}
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+          />
+        </label>
+        <div className="notice compact">
+          自分のプロフィールを引き継ぎます。アレルギー・食の好みは作成後に編集できます。
+        </div>
+        <p className="small muted">
+          招待URLは同じブラウザの別タブで利用できます。
+        </p>
+        <button className="button primary">
+          <Plus size={18} />
+          グループを作成
+        </button>
+      </form>
     </div>
   );
 }

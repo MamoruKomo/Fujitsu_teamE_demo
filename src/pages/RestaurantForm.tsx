@@ -20,35 +20,41 @@ import {
 import { MOCK_RECEIPT, photo } from "../data/seed";
 import type { Restaurant, MenuItem, AllergenStatus } from "../types";
 import { useStore } from "../hooks/useStore";
+import {
+  parseFoodText,
+  parseMenuText,
+  type ExtractedProduct,
+} from "../lib/foodInput";
+import type { Worker } from "tesseract.js";
 import { reconcileAllergens } from "../lib/matching";
 import { AllergenPanel, Empty, FoodImage, Tags, yen } from "../components/ui";
 const steps = [
   "基本情報",
-  "レシート",
-  "抽出商品",
+  "画像の読み取り",
+  "読み取り結果",
   "情報の確認",
   "メニュー",
   "登録",
 ];
 const newMenu = (): MenuItem => ({
   id: crypto.randomUUID(),
-  name: "",
+  name: "季節の野菜プレート",
   price: 1500,
-  description: "",
+  description: "彩り豊かな野菜とごはんのデモメニュー",
   image: photo("salad"),
-  ingredients: [],
+  ingredients: ["野菜", "米", "玉ねぎ"],
   allergens: [],
   allergenReviewStatus: "unconfirmed",
 });
 const newRestaurant = (): Restaurant => ({
   id: crypto.randomUUID(),
-  name: "",
+  name: "季節の食卓 こもれび（デモ）",
   area: "渋谷",
   cuisine: "和食",
   price: 2500,
-  description: "",
+  description: "旬の野菜を中心に、ゆっくり食事を楽しめる架空のお店です。",
   images: [photo("japanese"), photo("salad")],
-  address: "",
+  address: "東京都渋谷区デモ通り1-2-3（架空）",
   location: { x: 52, y: 45 },
   openingHours: "11:00–21:00",
   rating: 0,
@@ -74,21 +80,25 @@ export default function RestaurantForm() {
   const [reading, setReading] = useState(false);
   const [read, setRead] = useState(false);
   const [error, setError] = useState("");
-  const [products, setProducts] = useState(
-    MOCK_RECEIPT.products.map((p) => ({
-      ...p,
-      candidates: [...p.candidates],
-      confirmed: false,
-    })),
+  const [products, setProducts] = useState<ExtractedProduct[]>([]);
+  const [documentType, setDocumentType] = useState<"receipt" | "menu">(
+    "receipt",
   );
+  const [sample, setSample] = useState(false);
+  const [ocrText, setOcrText] = useState("");
+  const [progress, setProgress] = useState(0);
   const [accepted, setAccepted] = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  useEffect(
-    () => () => {
-      if (timer.current) clearTimeout(timer.current);
-    },
-    [],
-  );
+  const workerRef = useRef<Worker | null>(null);
+  const mounted = useRef(true);
+  const job = useRef(0);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      job.current++;
+      void workerRef.current?.terminate();
+    };
+  }, []);
   useEffect(
     () => () => {
       if (receipt.startsWith("blob:")) URL.revokeObjectURL(receipt);
@@ -116,21 +126,97 @@ export default function RestaurantForm() {
     setFilename(file.name);
     setReceipt(URL.createObjectURL(file));
     setRead(false);
+    setSample(false);
+    setProducts([]);
+    setOcrText("");
   };
-  const runOcr = () => {
+  const applyText = (text: string) => {
+    const extracted = parseFoodText(text);
+    setProducts(extracted);
+    if (documentType === "menu") {
+      const menus = parseMenuText(text);
+      if (menus.length)
+        setR((p) => ({
+          ...p,
+          menus: menus.map((m) => ({
+            ...newMenu(),
+            ...m,
+            description:
+              "メニュー表からの読み取り候補。原材料は別途確認してください。",
+            allergenReviewStatus: "unconfirmed",
+          })),
+        }));
+    }
+    return extracted.length;
+  };
+  const runOcr = async () => {
+    const token = ++job.current;
     setReading(true);
     setRead(false);
-    timer.current = setTimeout(() => {
-      setReading(false);
+    setError("");
+    setProgress(0);
+    try {
+      let text: string;
+      if (sample) {
+        text =
+          documentType === "receipt"
+            ? MOCK_RECEIPT.products.map((p) => p.name).join("\n")
+            : "季節の野菜プレート 1500円\n牛肉と玉ねぎのステーキ 2200円\nえびとトマトのパスタ 1800円";
+      } else {
+        const { createWorker } = await import("tesseract.js");
+        if (!mounted.current || token !== job.current) return;
+        const worker = await createWorker("jpn+eng", 1, {
+          logger: (m) => {
+            if (mounted.current && token === job.current)
+              setProgress(
+                Math.round(
+                  (m.status === "recognizing text"
+                    ? 0.4 + m.progress * 0.6
+                    : m.progress * 0.4) * 100,
+                ),
+              );
+          },
+          errorHandler: () => {},
+        });
+        if (!mounted.current || token !== job.current) {
+          await worker.terminate();
+          return;
+        }
+        workerRef.current = worker;
+        try {
+          const result = await worker.recognize(receipt);
+          text = result.data.text;
+        } finally {
+          await worker.terminate();
+          if (workerRef.current === worker) workerRef.current = null;
+        }
+      }
+      if (!mounted.current || token !== job.current) return;
+      setOcrText(text);
+      setProgress(100);
+      if (!applyText(text)) {
+        setError(
+          "文字を検出できませんでした。明るく鮮明な画像で再試行するか、手動入力してください。",
+        );
+        return;
+      }
+      if (sample && documentType === "receipt")
+        setProducts(
+          MOCK_RECEIPT.products.map((p) => ({
+            ...p,
+            candidates: [...p.candidates],
+            confirmed: false,
+          })),
+        );
       setRead(true);
-      setProducts(
-        MOCK_RECEIPT.products.map((p) => ({
-          ...p,
-          candidates: [...p.candidates],
-          confirmed: false,
-        })),
-      );
-    }, 1400);
+    } catch {
+      if (mounted.current && token === job.current)
+        setError(
+          "読み取りに失敗しました。画像や通信環境を確認して再試行してください。",
+        );
+    } finally {
+      if (mounted.current && token === job.current) setReading(false);
+    }
   };
   const usedProducts = products
     .filter((p) => p.confirmed)
@@ -214,6 +300,11 @@ export default function RestaurantForm() {
         </div>
         {step === 0 && (
           <>
+            {!id && (
+              <div className="green-notice dummy-note">
+                店舗名・住所・予算・メニューはダミー情報を自動入力しています。そのまま進めるほか、自由に変更できます。
+              </div>
+            )}
             <div className="form-grid">
               <label className="field">
                 店舗名
@@ -319,19 +410,45 @@ export default function RestaurantForm() {
         )}
         {step === 1 && (
           <>
+            <div className="ocr-type" aria-label="読み取る書類">
+              {(["receipt", "menu"] as const).map((type) => (
+                <button
+                  type="button"
+                  key={type}
+                  disabled={reading}
+                  className={`button ${documentType === type ? "primary" : "secondary"}`}
+                  onClick={() => {
+                    setDocumentType(type);
+                    setReceipt("");
+                    setFilename("");
+                    setRead(false);
+                    setProducts([]);
+                    setOcrText("");
+                    setError("");
+                  }}
+                >
+                  {type === "receipt" ? "レシート" : "メニュー表"}
+                </button>
+              ))}
+            </div>
             <div className="ocr-badge">
               <ScanLine size={19} />
-              模擬OCR · 実際の文字認識は行いません
+              日本語・英語の画像を読み取り
             </div>
             <p>
-              アップロード画像に関係なく、サンプルレシートの固定結果を表示します。実際の仕入れ・原材料情報には使わないでください。
+              画像の文字をブラウザ内で認識します。初回は読み取り用データの取得に時間がかかります。結果は必ず確認・修正してください。
             </p>
             <label className="upload-box">
               <Upload size={30} />
-              <strong>{filename || "レシート画像を選択"}</strong>
+              <strong>
+                {filename ||
+                  `${documentType === "receipt" ? "レシート" : "メニュー表"}の画像を選択`}
+              </strong>
               <span>JPEG・PNG・WebP / 8MBまで</span>
               <input
+                disabled={reading}
                 className="sr-only"
+                aria-label="OCR画像を選択"
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 onChange={(e) => upload(e.target.files?.[0])}
@@ -341,13 +458,27 @@ export default function RestaurantForm() {
               <button
                 type="button"
                 className="button secondary"
+                disabled={reading}
                 onClick={() => {
-                  setReceipt(MOCK_RECEIPT.image);
-                  setFilename("サンプルレシート");
+                  setSample(true);
+                  setReceipt(
+                    documentType === "receipt"
+                      ? MOCK_RECEIPT.image
+                      : `${import.meta.env.BASE_URL}images/menu-sample.svg`,
+                  );
+                  setFilename(
+                    documentType === "receipt"
+                      ? "サンプルレシート"
+                      : "サンプルメニュー表",
+                  );
                   setRead(false);
+                  setProducts([]);
+                  setOcrText("");
+                  setError("");
                 }}
               >
-                サンプルレシートを使う
+                サンプル{documentType === "receipt" ? "レシート" : "メニュー表"}
+                を使う
               </button>
               {receipt && (
                 <button
@@ -361,20 +492,55 @@ export default function RestaurantForm() {
                   ) : (
                     <ScanLine size={17} />
                   )}{" "}
-                  {reading ? "模擬読み取り中…" : "読み取る（模擬）"}
+                  {reading
+                    ? `読み取り中… ${progress}%`
+                    : sample
+                      ? "サンプル結果を表示"
+                      : "画像を読み取る"}
                 </button>
               )}
             </div>
+            {reading && (
+              <>
+                <progress
+                  className="ocr-progress"
+                  value={progress}
+                  max={100}
+                  aria-label="OCR進捗"
+                />
+                <button
+                  type="button"
+                  className="text-link small"
+                  onClick={() => {
+                    job.current++;
+                    setReading(false);
+                    void workerRef.current?.terminate();
+                    workerRef.current = null;
+                    setError(
+                      "読み取りを中止しました。再試行または手動入力ができます。",
+                    );
+                  }}
+                >
+                  読み取りを中止
+                </button>
+              </>
+            )}
             {receipt && (
               <div className={`receipt-preview ${reading ? "scanning" : ""}`}>
-                <img src={receipt} alt="選択したレシート" />
+                <img src={receipt} alt="選択した書類" />
                 {reading && <span className="scan-line" />}
               </div>
+            )}
+            {sample && (
+              <p className="small muted">
+                サンプルは決まった読み取り結果を使います。アップロード画像は実際に文字認識します。
+              </p>
             )}
             {read && (
               <div className="green-notice" role="status">
                 <Check size={18} />
-                固定サンプルの6商品を表示できます。次へ進んで確認してください。
+                {products.length}
+                件の候補を抽出しました。次へ進んで確認してください。
               </div>
             )}
             <button
@@ -383,26 +549,108 @@ export default function RestaurantForm() {
               disabled={reading}
               onClick={() => {
                 setRead(false);
+                setProducts([]);
                 setStep(3);
+                setError("");
               }}
             >
-              レシートを使わず、手動確認へ進む
+              画像を使わず、手動確認へ進む
             </button>
           </>
         )}
         {step === 2 && (
           <>
+            <label className="field">
+              読み取った文字（修正できます）
+              <textarea
+                className="ocr-text"
+                value={ocrText}
+                maxLength={20000}
+                onChange={(e) => {
+                  setOcrText(e.target.value);
+                  setRead(false);
+                }}
+              />
+            </label>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => {
+                if (!applyText(ocrText)) {
+                  setError("読み取り結果を入力してください。");
+                  setRead(false);
+                } else {
+                  setRead(true);
+                  setError("");
+                }
+              }}
+            >
+              修正した文字から候補を更新
+            </button>
+            {!read && (
+              <p className="small muted">
+                文字を変更した後は「候補を更新」を押してください。メニュー表の更新はメニュー候補を置き換えます。
+              </p>
+            )}
             <p>
-              商品マスタとの照合候補です。ラベルを確認した想定で、商品ごとに候補を修正し「確認した」を選んでください。未確認の商品は確定情報に反映しません。
+              文字と食材名からの照合候補です。ラベルを確認した想定で、商品ごとに候補を修正し「確認した」を選んでください。未確認の商品は確定情報に反映しません。
             </p>
             <div className="product-list">
               {products.map((p, i) => (
                 <div
                   className={`product-row ${p.confirmed ? "confirmed" : ""}`}
-                  key={p.name}
+                  key={i}
                 >
                   <div>
-                    <strong>{p.name}</strong>
+                    <label className="field">
+                      読み取った商品・料理名
+                      <input
+                        value={p.name}
+                        maxLength={180}
+                        onChange={(e) =>
+                          setProducts((ps) =>
+                            ps.map((x, j) =>
+                              i === j
+                                ? {
+                                    ...x,
+                                    name: e.target.value,
+                                    confirmed: false,
+                                  }
+                                : x,
+                            ),
+                          )
+                        }
+                      />
+                    </label>
+                    <label className="field">
+                      食材名
+                      <input
+                        value={p.ingredient}
+                        maxLength={40}
+                        onChange={(e) =>
+                          setProducts((ps) =>
+                            ps.map((x, j) =>
+                              i === j
+                                ? {
+                                    ...x,
+                                    ingredient: e.target.value,
+                                    confirmed: false,
+                                  }
+                                : x,
+                            ),
+                          )
+                        }
+                      />
+                    </label>
+                    <button
+                      className="text-link small"
+                      type="button"
+                      onClick={() =>
+                        setProducts((ps) => ps.filter((_, j) => i !== j))
+                      }
+                    >
+                      この候補を削除
+                    </button>
                     <span className="small muted">
                       メニューに紐付ける食材：{p.ingredient}
                     </span>
@@ -439,7 +687,7 @@ export default function RestaurantForm() {
               ))}
             </div>
             <div className="notice compact">
-              レシートに載っていない食材を「不使用」とは判定しません。調味料・加工食品の原材料も別途確認が必要です。
+              画像に載っていない食材を「不使用」とは判定しません。調味料・加工食品の原材料も別途確認が必要です。
             </div>
           </>
         )}
@@ -485,6 +733,24 @@ export default function RestaurantForm() {
         )}
         {step === 4 && (
           <>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => {
+                setDocumentType("menu");
+                setReceipt("");
+                setFilename("");
+                setSample(false);
+                setRead(false);
+                setOcrText("");
+                setProducts([]);
+                setStep(1);
+                setError("");
+              }}
+            >
+              <ScanLine size={17} />
+              メニュー表の画像から入力する
+            </button>
             <p>
               食材はメニューごとに選択してください。確認済み商品の食材も、全メニューへ自動で割り当てることはありません。
             </p>
@@ -569,7 +835,10 @@ export default function RestaurantForm() {
                     ]}
                     selected={m.ingredients}
                     onChange={(ingredients) =>
-                      menuSet(m.id, { ingredients, allergenReviewStatus: "unconfirmed" })
+                      menuSet(m.id, {
+                        ingredients,
+                        allergenReviewStatus: "unconfirmed",
+                      })
                     }
                   />
                 )}
@@ -680,7 +949,9 @@ export default function RestaurantForm() {
             className="button primary"
             type="submit"
             disabled={
-              reading || (step === 1 && !read) || (step === 5 && !accepted)
+              reading ||
+              ((step === 1 || step === 2) && !read) ||
+              (step === 5 && !accepted)
             }
           >
             {step === 5 ? (

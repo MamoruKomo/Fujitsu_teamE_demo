@@ -2683,10 +2683,117 @@ p {
 }
 
 @media (max-width: 600px) {
-  .search-intro { padding: 20px 0 17px; }
-  .search-intro h1 { font-size: 26px; }
-  .mobile-break { display: none; }
-  .cuisine-row { padding-top: 8px; }
-  .cuisine-row button { padding-bottom: 14px; }
-  .results-section .section-heading p { font-size: 12px; line-height: 1.6; }
+  .search-intro {
+    padding: 20px 0 17px;
+  }
+  .search-intro h1 {
+    font-size: 26px;
+  }
+  .mobile-break {
+    display: none;
+  }
+  .cuisine-row {
+    padding-top: 8px;
+  }
+  .cuisine-row button {
+    padding-bottom: 14px;
+  }
+  .results-section .section-heading p {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+}
+
+.ingredient-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border, #ddd);
+  border-radius: 12px;
+  padding: 0 12px;
+  margin-bottom: 12px;
+  color: #777;
+}
+.ingredient-search input {
+  border: 0 !important;
+  box-shadow: none !important;
+  flex: 1;
+  min-width: 0;
+  padding: 12px 0 !important;
+}
+.selected-ingredients {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+.selected-ingredients button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  border: 0;
+  border-radius: 20px;
+  background: #fff0ed;
+  color: #b83f31;
+  padding: 7px 11px;
+}
+.ingredient-picker .tags {
+  max-height: 180px;
+  overflow-y: auto;
+}
+.quick-group-link {
+  margin-left: auto;
+  align-self: center;
+  font-size: 13px;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  color: #c64535;
+}
+.group-list {
+  display: grid;
+  gap: 12px;
+}
+.group-list-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.group-list-item span {
+  margin-left: auto;
+}
+.group-list-item h3,
+.group-list-item p {
+  margin: 4px 0;
+}
+.ocr-text {
+  width: 100%;
+  min-height: 180px;
+}
+.ocr-type {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.ocr-type button {
+  flex: 1;
+}
+.dummy-note {
+  margin-bottom: 20px;
+}
+.ocr-progress {
+  width: 100%;
+  accent-color: #ef6955;
+}
+@media (max-width: 600px) {
+  .mode-tabs {
+    flex-wrap: wrap;
+  }
+  .quick-group-link {
+    width: 100%;
+    margin: 10px 0;
+  }
+  .group-list-item {
+    padding: 18px !important;
+  }
 }

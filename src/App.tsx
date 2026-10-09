@@ -27,6 +27,7 @@ import { StoreProvider, useStore } from "./hooks/useStore";
 import SearchPage from "./pages/Search";
 import {
   CreateGroup,
+  GroupList,
   JoinGroup,
   GroupManagement,
   PersonalProfile,
@@ -35,7 +36,7 @@ import Detail, { Decision } from "./pages/Detail";
 import RestaurantForm from "./pages/RestaurantForm";
 import { Empty, Modal } from "./components/ui";
 function Shell() {
-  const { data, error, reset } = useStore();
+  const { error, reset } = useStore();
   const [resetOpen, setResetOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [resetDone, setResetDone] = useState(false);
@@ -67,11 +68,7 @@ function Shell() {
               <Utensils size={17} />
               お店を探す
             </NavLink>
-            <NavLink
-              to={
-                data.groups[0] ? `/groups/${data.groups[0].id}` : "/groups/new"
-              }
-            >
+            <NavLink to="/groups">
               <Users size={17} />
               マイグループ
             </NavLink>
@@ -130,6 +127,7 @@ function Shell() {
         <Routes>
           <Route path="/" element={<SearchPage home />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/groups" element={<GroupList />} />
           <Route path="/groups/new" element={<CreateGroup />} />
           <Route path="/join/:id" element={<JoinGroup />} />
           <Route path="/groups/:id" element={<GroupManagement />} />
