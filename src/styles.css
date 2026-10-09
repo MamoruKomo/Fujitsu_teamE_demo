@@ -2797,3 +2797,18 @@ p {
     padding: 18px !important;
   }
 }
+
+.selection-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+}
+.selection-actions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.selection-actions span {
+  margin-left: auto;
+}

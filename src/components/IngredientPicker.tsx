@@ -1,6 +1,6 @@
 import { useId, useState } from "react";
 import { Search, X } from "lucide-react";
-import { Tags } from "./ui";
+import { Tags, SelectionActions } from "./ui";
 import { foodSearchMatch } from "../lib/foodInput";
 export function IngredientPicker({
   options,
@@ -8,12 +8,14 @@ export function IngredientPicker({
   onChange,
   label,
   tone = "coral",
+  allowSelectAll = false,
 }: {
   options: readonly (string | readonly [string, string])[];
   selected: string[];
   onChange: (values: string[]) => void;
   label: string;
   tone?: string;
+  allowSelectAll?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const id = useId();
@@ -24,6 +26,19 @@ export function IngredientPicker({
   );
   return (
     <div className="ingredient-picker">
+      {allowSelectAll && (
+        <>
+          <SelectionActions
+            options={entries.map(([value]) => value)}
+            selected={selected}
+            onChange={onChange}
+            label={label}
+          />
+          <p className="small muted">
+            全選択は、検索条件に関係なくすべての食材を選びます。同じ食材の苦手登録は解除されます。
+          </p>
+        </>
+      )}
       <label className="ingredient-search" htmlFor={id}>
         <Search size={18} />
         <input
@@ -60,7 +75,9 @@ export function IngredientPicker({
       />
       {!filtered.length && (
         <p className="small muted">
-          該当する未選択の食材がありません。検索語を変えてください。
+          {entries.every(([value]) => selected.includes(value))
+            ? "すべての食材を選択しています。"
+            : "該当する未選択の食材がありません。検索語を変えてください。"}
         </p>
       )}
     </div>

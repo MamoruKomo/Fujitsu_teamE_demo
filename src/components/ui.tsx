@@ -104,6 +104,44 @@ export function Tags({
     </div>
   );
 }
+export function SelectionActions({
+  options,
+  selected,
+  onChange,
+  label,
+}: {
+  options: readonly string[];
+  selected: string[];
+  onChange: (values: string[]) => void;
+  label: string;
+}) {
+  const count = options.filter((value) => selected.includes(value)).length;
+  return (
+    <div className="selection-actions">
+      <button
+        type="button"
+        className="text-link small"
+        aria-label={`${label}を全選択`}
+        disabled={count === options.length}
+        onClick={() => onChange([...new Set([...selected, ...options])])}
+      >
+        全選択
+      </button>
+      <button
+        type="button"
+        className="text-link small"
+        aria-label={`${label}の選択をすべて解除`}
+        disabled={!selected.length}
+        onClick={() => onChange([])}
+      >
+        すべて解除
+      </button>
+      <span className="small muted" role="status">
+        {count} / {options.length} 選択中
+      </span>
+    </div>
+  );
+}
 export function Modal({
   title,
   onClose,
@@ -254,7 +292,11 @@ export function RestaurantCard({
         <FoodImage src={r.images[0]} alt={`${r.name}の料理（イメージ）`} />
         <span className={`card-label ${rank === 0 ? "top" : ""}`}>
           <Check size={13} />
-          {rank === 0 ? (groupId ? "みんなに一番おすすめ" : "あなたに一番おすすめ") : "アレルギー登録条件に一致"}
+          {rank === 0
+            ? groupId
+              ? "みんなに一番おすすめ"
+              : "あなたに一番おすすめ"
+            : "アレルギー登録条件に一致"}
         </span>
         <span className="image-count">1 / {r.images.length}</span>
       </Link>
@@ -266,7 +308,14 @@ export function RestaurantCard({
             <h3>{r.name}</h3>
           </Link>
           <span className="rating">
-            {r.reviews.length > 0 ? <><Star size={13} fill="currentColor" />{r.rating.toFixed(1)}</> : "新規登録"}
+            {r.reviews.length > 0 ? (
+              <>
+                <Star size={13} fill="currentColor" />
+                {r.rating.toFixed(1)}
+              </>
+            ) : (
+              "新規登録"
+            )}
           </span>
         </div>
         <p className="card-meta">

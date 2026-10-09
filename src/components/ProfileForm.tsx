@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ShieldCheck, Leaf, Check } from "lucide-react";
 import type { UserProfile } from "../types";
 import { ALLERGENS, INGREDIENTS, CUISINES } from "../data/constants";
-import { Tags } from "./ui";
+import { Tags, SelectionActions } from "./ui";
 import { IngredientPicker } from "./IngredientPicker";
 export const blankProfile = (): UserProfile => ({
   id: crypto.randomUUID(),
@@ -104,6 +104,7 @@ export function ProfileForm({
             <h3>好きな食材</h3>
             <IngredientPicker
               label="好きな食材"
+              allowSelectAll
               options={INGREDIENTS}
               selected={profile.likedIngredients}
               onChange={(v) => set("likedIngredients", v)}
@@ -122,6 +123,12 @@ export function ProfileForm({
           </section>
           <section className="form-section">
             <h3>好きな料理ジャンル</h3>
+            <SelectionActions
+              options={CUISINES}
+              selected={profile.likedCuisines}
+              onChange={(v) => set("likedCuisines", v)}
+              label="好きな料理ジャンル"
+            />
             <Tags
               options={CUISINES}
               selected={profile.likedCuisines}
