@@ -12,39 +12,78 @@ import {
 } from "lucide-react";
 import { useStore } from "../hooks/useStore";
 import type { UserProfile } from "../types";
+import { GroupCards } from "../components/GroupCards";
 import { ProfileForm } from "../components/ProfileForm";
 import { Avatar, Empty, Modal, ProfileSummary } from "../components/ui";
 export function GroupList() {
   const { data } = useStore();
+  const [query, setQuery] = useState("");
+  const groups = [...data.groups]
+    .reverse()
+    .filter((g) =>
+      `${g.name} ${g.members.map((m) => m.nickname).join(" ")}`
+        .normalize("NFKC")
+        .toLowerCase()
+        .includes(query.trim().normalize("NFKC").toLowerCase()),
+    );
   return (
-    <div className="narrow-page">
+    <div className="groups-page">
       <div className="page-title inline-title">
         <div>
           <div className="eyebrow">YOUR GROUPS</div>
           <h1>マイグループ</h1>
-          <p>ごはんの予定に合わせて、気軽に作れます。</p>
+          <p>
+            友だちと、家族と、仕事仲間と。ごはん会ごとに、みんなの好みをまとめよう。
+          </p>
         </div>
         <Link className="button primary" to="/groups/new">
           <Plus size={18} />
           新しいグループ
         </Link>
       </div>
-      <div className="group-list">
-        {data.groups.map((g) => (
-          <Link
-            key={g.id}
-            className="form-card group-list-item"
-            to={`/groups/${g.id}`}
-          >
-            <Users size={24} />
-            <div>
-              <h3>{g.name}</h3>
-              <p>{g.members.length}人が参加中</p>
-            </div>
-            <span>開く →</span>
-          </Link>
-        ))}
+      <div className="groups-toolbar">
+        <span>
+          <strong>{data.groups.length}</strong> グループ
+        </span>
+        <label className="ingredient-search">
+          <Search size={18} />
+          <input
+            aria-label="グループを検索"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="グループ名・参加者名で検索"
+          />
+        </label>
       </div>
+      {groups.length ? (
+        <GroupCards groups={groups} restaurants={data.restaurants} />
+      ) : (
+        <div className="group-list-empty">
+          <Users size={32} />
+          <h2>
+            {query
+              ? "一致するグループがありません"
+              : "最初のグループを作りましょう"}
+          </h2>
+          <p>
+            {query
+              ? "グループ名や参加者名を変えて検索してください。"
+              : "名前とニックネームだけで、すぐに作成できます。"}
+          </p>
+          {query ? (
+            <button className="button secondary" onClick={() => setQuery("")}>
+              検索をクリア
+            </button>
+          ) : (
+            <Link className="button primary" to="/groups/new">
+              グループを作成
+            </Link>
+          )}
+        </div>
+      )}
+      <p className="small muted groups-storage-note">
+        グループはこのブラウザに保存されます。招待URLは同じブラウザの別タブで利用できます。
+      </p>
     </div>
   );
 }
@@ -240,8 +279,8 @@ export function GroupManagement() {
   };
   return (
     <>
-      <Link className="back-link" to="/">
-        ホームへ戻る
+      <Link className="back-link" to="/groups">
+        グループ一覧へ戻る
       </Link>
       <div className="page-title inline-title">
         <div>

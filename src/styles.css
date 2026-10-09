@@ -2812,3 +2812,195 @@ p {
 .selection-actions span {
   margin-left: auto;
 }
+
+.groups-page {
+  padding-bottom: 40px;
+}
+.groups-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.groups-toolbar strong {
+  font-size: 24px;
+}
+.groups-toolbar .ingredient-search {
+  width: min(420px, 60%);
+  margin: 0;
+}
+.group-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.group-overview-card {
+  border: 1px solid #e6e7df;
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #fff;
+  transition: box-shadow 0.2s;
+}
+.group-overview-card:hover {
+  box-shadow: 0 8px 25px #242e260c;
+}
+.group-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.group-symbol {
+  display: flex;
+  padding: 12px;
+  border-radius: 14px;
+  background: #faf2ed;
+  color: var(--coral);
+}
+.group-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #777e72;
+  background: #f5f5ef;
+  border-radius: 20px;
+  padding: 6px 10px;
+}
+.group-status.decided {
+  color: #4d6950;
+  background: #edf4e9;
+}
+.group-overview-card h3 {
+  font-size: 20px;
+  line-height: 1.5;
+  margin: 18px 0 16px;
+  overflow-wrap: anywhere;
+}
+.group-card-members {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #757c70;
+}
+.group-member-names {
+  font-size: 12px;
+  color: #777e72;
+  overflow-wrap: anywhere;
+  margin: 12px 0;
+}
+.group-allergy-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #777e72;
+  margin: 0 0 20px;
+}
+.group-allergy-summary svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.group-decision-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: #4d6950;
+  margin: 0 0 18px;
+  overflow-wrap: anywhere;
+}
+.group-card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: auto;
+}
+.group-card-actions .button {
+  font-size: 12px;
+  padding: 12px 8px;
+  min-width: 0;
+}
+.group-list-empty {
+  text-align: center;
+  border: 1px dashed #e0e3d9;
+  border-radius: 20px;
+  padding: 60px 20px;
+  color: #777e72;
+}
+.group-list-empty svg {
+  margin: 0 auto;
+}
+.groups-storage-note {
+  margin-top: 28px;
+}
+.home-groups {
+  padding: 0 0 36px;
+  margin: 0 0 30px;
+  border-bottom: 1px solid #e6e7df;
+}
+.home-groups .section-heading h2 {
+  font-size: 21px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.count-badge {
+  font-size: 12px;
+  border-radius: 30px;
+  padding: 5px 9px;
+  background: #f4f4ed;
+  color: #777e72;
+}
+.home-new-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border: 1px dashed #dedfd5;
+  border-radius: 14px;
+  padding: 15px;
+  margin-top: 16px;
+  color: var(--coral);
+  font-size: 13px;
+}
+.home-groups .section-heading p {
+  margin: 6px 0 20px;
+}
+@media (max-width: 1000px) {
+  .group-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .group-card-grid {
+    grid-template-columns: 1fr;
+  }
+  .groups-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .groups-toolbar .ingredient-search {
+    width: 100%;
+  }
+  .group-overview-card {
+    padding: 20px;
+  }
+  .home-groups .section-heading {
+    align-items: flex-start;
+  }
+  .home-groups .section-heading .text-link {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .groups-page .inline-title {
+    gap: 20px;
+  }
+}

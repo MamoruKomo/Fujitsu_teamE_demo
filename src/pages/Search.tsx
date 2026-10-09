@@ -19,6 +19,7 @@ import {
   Check,
   Plus,
 } from "lucide-react";
+import { GroupCards } from "../components/GroupCards";
 import { useStore } from "../hooks/useStore";
 import { AREAS, BUDGETS, CUISINES, allergenLabel } from "../data/constants";
 import { matchRestaurants } from "../lib/matching";
@@ -100,10 +101,7 @@ export default function SearchPage({ home = false }: { home?: boolean }) {
             アレルギーも、好き嫌いも。みんなの食の好みから、ぴったりの一軒を。
           </p>
         </div>
-        <Link
-          className="intro-group"
-          to={group ? `/groups/${group.id}` : "/groups/new"}
-        >
+        <Link className="intro-group" to="/groups">
           <div className="avatar-stack">
             {(group?.members ?? data.groups[0]?.members ?? [])
               .slice(0, 4)
@@ -112,17 +110,44 @@ export default function SearchPage({ home = false }: { home?: boolean }) {
               ))}
           </div>
           <div>
-            <span className="small muted">あなたのグループ</span>
-            <strong>{group?.name ?? "グループを作ろう"}</strong>
-            <span className="small">
-              {group?.members.length ?? 0}人の食の好みを登録済み
-            </span>
+            <span className="small muted">マイグループ</span>
+            <strong>{data.groups.length}つのグループ</strong>
+            <span className="small">グループ一覧を見る</span>
           </div>
           <ChevronDown size={16} />
         </Link>
       </section>
+      {home && (
+        <section className="home-groups" aria-label="マイグループ一覧">
+          <div className="section-heading">
+            <div>
+              <h2>
+                マイグループ{" "}
+                <span className="count-badge">{data.groups.length}</span>
+              </h2>
+              <p className="small muted">
+                ごはん会を選んで、お店探しをはじめよう。
+              </p>
+            </div>
+            <Link className="text-link" to="/groups">
+              一覧を見る →
+            </Link>
+          </div>
+          {data.groups.length ? (
+            <GroupCards
+              groups={[...data.groups].reverse()}
+              restaurants={data.restaurants}
+            />
+          ) : (
+            <p className="muted">まだグループがありません。</p>
+          )}
+          <Link className="home-new-group" to="/groups/new">
+            <Plus size={18} />
+            新しいグループを作る
+          </Link>
+        </section>
+      )}
       <div className="mode-tabs" aria-label="検索モード">
-
         <button
           className={!personal ? "active" : ""}
           onClick={() => setMode("group")}
