@@ -9,6 +9,7 @@ import {
   Trash2,
   ShieldCheck,
   LoaderCircle,
+  Search,
 } from "lucide-react";
 import {
   ALLERGENS,
@@ -24,11 +25,13 @@ import { useStore } from "../hooks/useStore";
 import {
   parseFoodText,
   parseMenuText,
+  foodSearchMatch,
   type ExtractedProduct,
 } from "../lib/foodInput";
 import type { Worker } from "tesseract.js";
 import { reconcileAllergens } from "../lib/matching";
-import { AllergenPanel, Empty, FoodImage, Tags, yen } from "../components/ui";
+import { AllergenPanel, Empty, FoodImage, yen } from "../components/ui";
+import { IngredientPicker } from "../components/IngredientPicker";
 const steps = [
   "基本情報",
   "画像の読み取り",
@@ -77,6 +80,7 @@ export default function RestaurantForm() {
     existing ? structuredClone(existing) : newRestaurant(),
   );
   const [step, setStep] = useState(0);
+  const [allergenQuery, setAllergenQuery] = useState("");
   const [receipt, setReceipt] = useState("");
   const [filename, setFilename] = useState("");
   const [reading, setReading] = useState(false);
@@ -686,7 +690,8 @@ export default function RestaurantForm() {
                       {t("メニューに紐付ける食材：")}
                       {t(p.ingredient)}
                     </span>
-                    <Tags
+                    <IngredientPicker
+                      label={t("アレルギー食材")}
                       options={ALLERGENS}
                       selected={p.candidates}
                       onChange={(candidates) =>
@@ -732,8 +737,20 @@ export default function RestaurantForm() {
                 "店舗全体の使用状況を確認してください。サンプル商品の確認済み候補は「使用あり」に反映されます。不使用は、店舗全体で確認した場合だけ選んでください。",
               )}
             </p>
+            <label className="ingredient-search">
+              <Search size={18} />
+              <input
+                aria-label={t("アレルギー食材を検索")}
+                placeholder={t("アレルギー食材を検索（例：えび、たまご）")}
+                value={allergenQuery}
+                onChange={(e) => setAllergenQuery(e.target.value)}
+                autoComplete="off"
+              />
+            </label>
             <div className="allergen-editor">
-              {ALLERGENS.map(([a, label]) => (
+              {ALLERGENS.filter(([a, label]) =>
+                foodSearchMatch(a, label, allergenQuery),
+              ).map(([a, label]) => (
                 <label key={a}>
                   <strong>{t(label)}</strong>
                   <select
@@ -755,6 +772,13 @@ export default function RestaurantForm() {
                 </label>
               ))}
             </div>
+            {!ALLERGENS.some(([a, label]) =>
+              foodSearchMatch(a, label, allergenQuery),
+            ) && (
+              <p className="small muted">
+                {t("該当する食材がありません。検索語を変えてください。")}
+              </p>
+            )}
             <label className="field">
               {t("調理環境・交差接触について")}
               <textarea
@@ -865,7 +889,8 @@ export default function RestaurantForm() {
                   {t("食材情報は未確認")}
                 </label>
                 {m.ingredients !== null && (
-                  <Tags
+                  <IngredientPicker
+                    label={t("使用食材")}
                     options={[
                       ...new Set([
                         ...INGREDIENTS,
@@ -884,7 +909,8 @@ export default function RestaurantForm() {
                   />
                 )}
                 <h4>{t("メニューに含まれるアレルゲン")}</h4>
-                <Tags
+                <IngredientPicker
+                  label={t("アレルギー食材")}
                   options={ALLERGENS}
                   selected={m.allergens}
                   onChange={(allergens) =>

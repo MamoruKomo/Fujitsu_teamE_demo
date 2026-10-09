@@ -188,6 +188,11 @@ export const TRANSLATIONS: Record<string, readonly [string, string, string]> = {
     "没有符合条件的未选食材，请更换搜索词。",
     "일치하는 미선택 식재료가 없습니다. 검색어를 바꿔 주세요.",
   ],
+  "該当する食材がありません。検索語を変えてください。": [
+    "No ingredients match. Try another search.",
+    "没有符合条件的食材，请更换搜索词。",
+    "일치하는 식재료가 없습니다. 검색어를 바꿔 주세요.",
+  ],
   お店決定済み: ["Restaurant chosen", "已选定餐厅", "식당 결정 완료"],
   お店を検討中: ["Choosing a restaurant", "正在挑选餐厅", "식당 검토 중"],
   人が参加中: [" members", " 位成员", "명 참여 중"],
