@@ -6,6 +6,27 @@ import type {
   ExcludedRestaurant,
 } from "../types";
 import { SCORE_WEIGHTS as W, allergenLabel } from "../data/constants";
+export function allergyImpact(restaurant: Restaurant, members: UserProfile[]) {
+  const affected = members.filter((member) =>
+    member.allergies.some(
+      (id) => restaurant.allergenStatuses[id] !== "not_used",
+    ),
+  ).length;
+  const total = members.length;
+  const allergens = [...new Set(members.flatMap((member) => member.allergies))]
+    .filter((id) => restaurant.allergenStatuses[id] !== "not_used")
+    .map((id) => ({
+      id,
+      status: restaurant.allergenStatuses[id] ?? "unknown",
+      count: members.filter((member) => member.allergies.includes(id)).length,
+    }));
+  return {
+    affected,
+    total,
+    percent: total ? Math.round((affected / total) * 100) : 0,
+    allergens,
+  };
+}
 export function scoreMenu(
   menu: MenuItem,
   member: UserProfile,

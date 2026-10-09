@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { createInitialData, createRestaurants } from "../data/seed";
 import { ALLERGENS } from "../data/constants";
-import { matchRestaurants, reconcileAllergens, scoreMenu } from "./matching";
+import {
+  allergyImpact,
+  matchRestaurants,
+  reconcileAllergens,
+  scoreMenu,
+} from "./matching";
 import type { MenuItem, UserProfile } from "../types";
 const data = createInitialData();
 const member: UserProfile = {
@@ -23,6 +28,40 @@ const menu: MenuItem = {
   allergens: [],
   allergenReviewStatus: "confirmed",
 };
+describe("excluded restaurant allergy percentages", () => {
+  it("counts each member once and shows per-allergen counts, including missing declarations", () => {
+    const r = {
+      ...data.restaurants[0],
+      allergenStatuses: { egg: "used" as const, milk: "not_used" as const },
+    };
+    const result = allergyImpact(r, [
+      { ...member, id: "a", allergies: ["egg", "shrimp", "egg"] },
+      { ...member, id: "b", allergies: ["shrimp"] },
+      { ...member, id: "c", allergies: ["milk"] },
+      { ...member, id: "d", allergies: [] },
+    ]);
+    expect(result).toEqual({
+      affected: 2,
+      total: 4,
+      percent: 50,
+      allergens: [
+        { id: "egg", status: "used", count: 1 },
+        { id: "shrimp", status: "unknown", count: 2 },
+      ],
+    });
+  });
+  it("handles personal search and zero members without division by zero", () => {
+    const r = {
+      ...data.restaurants[0],
+      allergenStatuses: { egg: "unknown" as const },
+    };
+    expect(allergyImpact(r, [{ ...member, allergies: ["egg"] }]).percent).toBe(
+      100,
+    );
+    expect(allergyImpact(r, []).percent).toBe(0);
+    expect(allergyImpact(r, [{ ...member, allergies: [] }]).affected).toBe(0);
+  });
+});
 describe("hard allergy constraints", () => {
   it("seed has 20 diverse restaurants, four menus and three reviews each; positive and excluded matches", () => {
     expect(data.restaurants).toHaveLength(20);

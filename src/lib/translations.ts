@@ -4,6 +4,23 @@ export const LANGUAGE_KEY = "mogu-language";
 export const isLocale = (value: unknown): value is Locale =>
   LOCALES.includes(value as Locale);
 export const TRANSLATIONS: Record<string, readonly [string, string, string]> = {
+  アレルギー条件に該当する参加者: [
+    "Members affected by allergy criteria",
+    "符合过敏排除条件的成员",
+    "알레르기 조건에 해당하는 참여자",
+  ],
+  "店舗全体のアレルギー条件への該当なし。メニューの確認状況などで除外されています。":
+    [
+      "No restaurant-wide allergy overlap. Excluded due to menu verification or other conditions.",
+      "餐厅整体信息与过敏条件无重叠，因菜单确认情况等条件而被排除。",
+      "식당 전체 알레르기 조건에는 해당하지 않습니다. 메뉴 확인 상태 등의 이유로 제외되었습니다.",
+    ],
+  "割合は参加者の登録アレルギーと、店舗全体の使用あり・未確認情報が重なる人数です。同じ人は合計で1人として数えます。発症確率や安全性を示すものではありません。":
+    [
+      "The percentage counts members whose registered allergies overlap with ingredients used or unconfirmed restaurant-wide. Each member is counted once in the total. It does not indicate reaction probability or safety.",
+      "该比例表示已登记过敏与餐厅整体使用中或未确认食材重叠的成员人数。总人数中每人只计一次，不代表发病概率或安全性。",
+      "등록된 알레르기가 식당 전체의 사용 중 또는 미확인 식재료와 겹치는 참여자의 비율입니다. 전체 인원에서 한 사람은 한 번만 계산합니다. 발병 확률이나 안전성을 나타내지 않습니다.",
+    ],
   写真をアップロード: ["Upload a photo", "上传照片", "사진 업로드"],
   "JPEG・PNG・WebPの画像（8MB以内）を選択してください。": [
     "Choose a JPEG, PNG or WebP image up to 8 MB.",

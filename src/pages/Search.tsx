@@ -21,6 +21,7 @@ import {
   Plus,
 } from "lucide-react";
 import { useStore } from "../hooks/useStore";
+import { AllergyImpact } from "../components/AllergyImpact";
 import { AREAS, BUDGETS, CUISINES, allergenLabel } from "../data/constants";
 import { matchRestaurants } from "../lib/matching";
 import { RestaurantCard, Notice, Empty, yen } from "../components/ui";
@@ -340,15 +341,23 @@ export default function SearchPage({ home = false }: { home?: boolean }) {
           <div className="excluded-grid">
             {result.excluded.map(({ restaurant: r, reasons }) => (
               <div key={r.id}>
-                <Link to={`/restaurants/${r.id}`}>
+                <Link
+                  to={`/restaurants/${r.id}${!personal && group ? `?group=${group.id}` : ""}`}
+                >
                   <strong>{r.name}</strong>
                 </Link>
+                <AllergyImpact restaurant={r} members={members} />
                 {reasons.map((reason) => (
                   <p key={reason}>{t(reason)}</p>
                 ))}
               </div>
             ))}
           </div>
+          <p className="small muted">
+            {t(
+              "割合は参加者の登録アレルギーと、店舗全体の使用あり・未確認情報が重なる人数です。同じ人は合計で1人として数えます。発症確率や安全性を示すものではありません。",
+            )}
+          </p>
         </details>
       )}
       <div className="bottom-links">
